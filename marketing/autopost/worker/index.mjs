@@ -433,6 +433,15 @@ const worker = {
       await postNext(env);
       return json({ ok: true });
     }
+    // Sends (again) the TikTok pack for an approved or posted draft.
+    if (req.method === "POST" && parts[0] === "tiktok-pack" && parts.length === 2) {
+      const d = await getDraft(env, parts[1]);
+      if (!d || !["approved", "posted"].includes(d.status)) return json({ error: "not approved" }, 400);
+      await sendTikTokPack(env, d);
+      d.tiktokPackSent = new Date().toISOString();
+      await putDraft(env, d);
+      return json({ ok: true });
+    }
     return notFound();
   },
 
