@@ -9,6 +9,10 @@ on:
   schedule:
     - cron: "30 6 * * *" # 06:30 UTC
   workflow_dispatch:
+    inputs:
+      extra:
+        description: "Make this many extra drafts today (0 = the normal daily 3)"
+        default: "0"
 
 concurrency:
   group: social-drafts
@@ -37,7 +41,9 @@ jobs:
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
           WORKER_URL: ${{ secrets.WORKER_URL }}
           DRAFTS_SECRET: ${{ secrets.DRAFTS_SECRET }}
-        run: node marketing/autopost/make-drafts.mjs --send
+          EXTRA: ${{ inputs.extra || '0' }}
+        run: |
+          if [ "$EXTRA" != "0" ]; then node marketing/autopost/make-drafts.mjs --send --extra "$EXTRA"; else node marketing/autopost/make-drafts.mjs --send; fi
       # GitHub switches off scheduled jobs in public repositories after 60
       # days with no activity, so each run saves a one-line note.
       - name: Save the last-run note
