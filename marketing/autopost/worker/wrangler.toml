@@ -14,12 +14,15 @@ binding = "POSTS"
 id = "bf67f1037bef401cac6765a4ee566099"
 
 # Posting times, in UTC (UK time in winter, an hour earlier in summer):
-# 08:00, 12:30 and 18:30.
+# 08:00, 12:30 and 18:30. Sundays at 19:00: the weekly TikTok batch.
 [triggers]
-crons = ["0 8 * * *", "30 12 * * *", "30 18 * * *"]
+crons = ["0 8 * * *", "30 12 * * *", "30 18 * * *", "0 19 * * SUN"]
 
 [vars]
 IG_API_VERSION = "v27.0"
 # New Meta apps use "Unified login" (graph.facebook.com); older ones graph.instagram.com.
 IG_GRAPH_HOST = "graph.facebook.com"
 PUBLIC_ORIGIN = "https://liftruna-posts.green-bonus-8c8f.workers.dev"
+# "true" also sends a TikTok pack the moment a draft is approved (off: the
+# Sunday batch covers TikTok).
+TIKTOK_PACK_ON_APPROVE = "false"

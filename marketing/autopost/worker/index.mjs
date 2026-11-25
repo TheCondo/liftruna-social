@@ -44,7 +44,44 @@ const say = (env, text) => telegram(env, "sendMessage", { chat_id: env.TELEGRAM_
 const TIKTOK_TAGS = "#personaltrainer #fitnesstok #gymtok #pt #coach #fitnessuk #liftruna";
 const escHtml = (s) => String(s).replace(/[&<>]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" })[c]);
 
-async function sendTikTokPack(env, d) {
+// Weekly TikTok batch (Connor, 25 Nov 2026): every Sunday evening, the
+// approved posts not yet batched, laid out at 3 a day for the coming week
+// (08:00, 13:00 and 19:00 UK time), each with its media and caption, ready
+// to schedule in TikTok Studio, which posts them at those times.
+const TIKTOK_TIMES = ["08:00", "13:00", "19:00"];
+
+async function sendTikTokBatch(env, now = new Date()) {
+  const recent = Date.now() - 14 * 86_400_000;
+  const ready = (await allDrafts(env))
+    .filter((d) => ["approved", "posted"].includes(d.status) && !d.tiktokBatchedAt && Date.parse(d.approvedAt ?? d.createdAt ?? 0) >= recent)
+    .sort((a, b) => (a.approvedAt ?? "").localeCompare(b.approvedAt ?? ""))
+    .slice(0, 7 * TIKTOK_TIMES.length);
+  if (!ready.length) {
+    await say(env, "🎵 TikTok week plan: no approved posts this week yet. Approve drafts during the week and they'll be in next Sunday's plan.");
+    return 0;
+  }
+  // Slots from the next Monday.
+  const monday = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() + ((8 - now.getUTCDay()) % 7 || 7)));
+  const slot = (i) => {
+    const day = new Date(monday.getTime() + Math.floor(i / TIKTOK_TIMES.length) * 86_400_000);
+    return `${day.toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short", timeZone: "UTC" })} · ${TIKTOK_TIMES[i % TIKTOK_TIMES.length]}`;
+  };
+  await say(
+    env,
+    `🎵 TikTok week plan: ${ready.length} post${ready.length === 1 ? "" : "s"} for the week from ${slot(0).split(" · ")[0]}.\n` +
+      "For each one below: save the media, then in TikTok Studio on a computer (tiktok.com/tiktokstudio/upload) upload it, paste the caption, " +
+      "turn on Content disclosure → Your brand, choose Schedule and set the date and time shown. TikTok then posts them by itself." +
+      (ready.length < 21 ? `\n\n${21 - ready.length} slots are empty: approve more drafts during the week to fill 3 a day.` : ""),
+  );
+  for (const [i, d] of ready.entries()) {
+    await sendTikTokPack(env, d, slot(i));
+    d.tiktokBatchedAt = new Date().toISOString();
+    await putDraft(env, d);
+  }
+  return ready.length;
+}
+
+async function sendTikTokPack(env, d, slot = "") {
   const origin = env.PUBLIC_ORIGIN;
   const chat = env.TELEGRAM_CHAT_ID;
   if (d.format === "video") {
@@ -61,7 +98,7 @@ async function sendTikTokPack(env, d) {
     chat_id: chat,
     parse_mode: "HTML",
     text:
-      `🎵 <b>TikTok pack for ${escHtml(d.id)}</b>\n` +
+      (slot ? `📅 <b>${escHtml(slot)}</b> · ${escHtml(d.id)}\n` : `🎵 <b>TikTok pack for ${escHtml(d.id)}</b>\n`) +
       `1. Save the ${d.format === "video" ? "video" : "photos"} above.\n` +
       `2. In TikTok: + → upload${d.format === "video" ? "" : " (photo mode)"} → add a trending sound.\n` +
       "3. Tap the caption below to copy it, and paste it in.\n" +
@@ -139,7 +176,9 @@ async function onTelegram(env, update) {
       await putDraft(env, d);
       await showResult(env, d);
     }
-    if (action === "a" && !d.tiktokPackSent) {
+    // Instant pack on approval: off by default now that TikTok comes in the
+    // Sunday batch (TIKTOK_PACK_ON_APPROVE = "true" turns it back on).
+    if (action === "a" && !d.tiktokPackSent && env.TIKTOK_PACK_ON_APPROVE === "true") {
       try {
         await sendTikTokPack(env, d);
         d.tiktokPackSent = new Date().toISOString();
@@ -433,6 +472,10 @@ const worker = {
       await postNext(env);
       return json({ ok: true });
     }
+    // Sends the weekly TikTok batch now (testing, or a missed Sunday).
+    if (req.method === "POST" && url.pathname === "/tiktok-batch") {
+      return json({ sent: await sendTikTokBatch(env) });
+    }
     // Sends (again) the TikTok pack for an approved or posted draft.
     if (req.method === "POST" && parts[0] === "tiktok-pack" && parts.length === 2) {
       const d = await getDraft(env, parts[1]);
@@ -445,7 +488,11 @@ const worker = {
     return notFound();
   },
 
-  async scheduled(_event, env, ctx) {
+  async scheduled(event, env, ctx) {
+    if (event.cron === "0 19 * * SUN") {
+      ctx.waitUntil(sendTikTokBatch(env));
+      return;
+    }
     ctx.waitUntil(renewKey(env).then(() => postNext(env)));
   },
 };

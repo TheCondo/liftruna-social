@@ -53,6 +53,8 @@ Drafts land in `marketing/autopost/drafts/<date>/` (not in git): one folder per 
 
 TikTok does not approve apps that post to their owner's own accounts, and does not let apps add logos or promotional text to content (developer guidelines, checked 25 Nov 2026), so TikTok is not posted automatically. When Connor approves a draft, the Worker also sends him a **TikTok pack** in Telegram: the video (or the photos, for photo mode) and a tap-to-copy caption with TikTok hashtags, plus a reminder to add a trending sound and switch on Content disclosure → Your brand. Posting it takes about a minute in the TikTok app.
 
+**Weekly TikTok batch:** every Sunday at 19:00 UTC the Worker sends a TikTok week plan: the approved posts not yet batched (approved in the last 14 days), laid out 3 a day from the next Monday at 08:00, 13:00 and 19:00 UK time, each with its media, slot and tap-to-copy caption, to schedule in TikTok Studio (tiktok.com/tiktokstudio/upload; up to 10 days ahead), which then posts them by itself. The instant pack on approval is off (`TIKTOK_PACK_ON_APPROVE` in `worker/wrangler.toml`). Send a batch by hand with POST /tiktok-batch (needs the drafts secret).
+
 ## Not built yet
 
 
