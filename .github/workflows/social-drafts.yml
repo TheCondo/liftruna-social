@@ -1,17 +1,18 @@
 name: Social post drafts
 
-# Every morning: scan what's topical, make 3 drafts (a video, a swipe
-# carousel and a single picture), and send them to Connor in Telegram. The
+# Every Sunday afternoon (Connor, 25 Nov 2026): scan what's topical, make the
+# coming week's drafts (4 a day: videos, swipe carousels and single pictures),
+# and send them to Connor in Telegram to approve in one sitting. The
 # Cloudflare Worker then handles his taps and posts the approved ones, so no
 # computer needs to be on. This repository is public, so GitHub's minutes
 # are free and unlimited.
 on:
   schedule:
-    - cron: "30 6 * * *" # 06:30 UTC
+    - cron: "0 15 * * 0" # Sundays 15:00 UTC
   workflow_dispatch:
     inputs:
       extra:
-        description: "Make this many extra drafts today (0 = the normal daily 3)"
+        description: "Make this many extra drafts today (0 = the normal weekly batch)"
         default: "0"
 
 concurrency:
@@ -24,7 +25,7 @@ permissions:
 jobs:
   drafts:
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    timeout-minutes: 60
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -41,9 +42,10 @@ jobs:
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
           WORKER_URL: ${{ secrets.WORKER_URL }}
           DRAFTS_SECRET: ${{ secrets.DRAFTS_SECRET }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           EXTRA: ${{ inputs.extra || '0' }}
         run: |
-          if [ "$EXTRA" != "0" ]; then node marketing/autopost/make-drafts.mjs --send --extra "$EXTRA"; else node marketing/autopost/make-drafts.mjs --send; fi
+          if [ "$EXTRA" != "0" ]; then node marketing/autopost/make-drafts.mjs --send --extra "$EXTRA"; else node marketing/autopost/make-drafts.mjs --send --week; fi
       # GitHub switches off scheduled jobs in public repositories after 60
       # days with no activity, so each run saves a one-line note.
       - name: Save the last-run note
@@ -61,4 +63,4 @@ jobs:
         run: |
           curl -s -X POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
             --data-urlencode "chat_id=${TELEGRAM_CHAT_ID}" \
-            --data-urlencode "text=⚠️ Today's drafts could not be made (GitHub job failed). Already-approved posts still go out." > /dev/null
+            --data-urlencode "text=⚠️ This week's drafts could not be made (GitHub job failed). Already-approved posts still go out. Tell Claude, or re-run it from the Actions tab." > /dev/null

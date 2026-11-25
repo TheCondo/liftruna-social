@@ -121,6 +121,8 @@ export function plan({ date, count = 3, trends, history = [], log = () => {}, fi
       if (!usable(c.idea)) continue;
       const key = c.ctx.topic?.id ?? c.ctx.event?.id;
       if (key && usedTopics.has(key)) continue;
+      // The same topic or event at most once in any 12 posts.
+      if (key && recent().slice(-12).some((p) => p.key === key)) continue;
       const out = write(c.idea, c.ctx, rng(`${date}-${chosen.length + firstNumber - 1}-${c.idea.id}-${key ?? ""}`), `${date}-${chosen.length + firstNumber}`);
       if (out.rejected) {
         log(`  rejected ${c.idea.id}: ${out.rejected.join(", ")}`);
@@ -130,6 +132,7 @@ export function plan({ date, count = 3, trends, history = [], log = () => {}, fi
         log(`  too like an earlier post: ${out.post.hook}`);
         continue;
       }
+      out.post.key = key ?? null;
       chosen.push(out.post);
       if (key) usedTopics.add(key);
     }

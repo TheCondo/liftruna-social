@@ -53,7 +53,7 @@ const results = {
 
 // Sends one draft: the slides (as an album when there are several), then
 // the caption with the buttons. Returns the message to update later.
-export async function sendDraft(post, files, { number, of, video } = {}) {
+export async function sendDraft(post, files, { number, of, video, day } = {}) {
   const { chat } = settings();
   const form = new FormData();
   form.append("chat_id", chat);
@@ -70,7 +70,7 @@ export async function sendDraft(post, files, { number, of, video } = {}) {
     await api("sendMediaGroup", form);
   }
   const head = [
-    `Draft ${number ?? ""}${of ? ` of ${of}` : ""} · ${{ video: "🎬 video (Reel)", carousel: "🖼️ swipe carousel", single: "🖼️ single picture" }[post.format] ?? post.layout} · for ${post.audience}`,
+    `${day ? `${day} · ` : ""}Draft ${number ?? ""}${of ? ` of ${of}` : ""} · ${{ video: "🎬 video (Reel)", carousel: "🖼️ swipe carousel", single: "🖼️ single picture" }[post.format] ?? post.layout} · for ${post.audience}`,
     `Idea from: ${post.source}`,
   ].join("\n");
   const message = await api("sendMessage", { chat_id: chat, text: `${head}\n\n${post.caption}`.slice(0, 4000), reply_markup: buttons(post.id) });

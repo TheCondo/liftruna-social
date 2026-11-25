@@ -18,7 +18,8 @@ import { draw, multiSlide } from "./lib/layouts.mjs";
 import { render } from "./lib/render.mjs";
 import { scan, upcomingEvents } from "./lib/trends.mjs";
 import { makeReel } from "./lib/reel.mjs";
-import { plan } from "./lib/writer.mjs";
+import { plan, similarity } from "./lib/writer.mjs";
+import { aiEnabled, rewrite } from "./lib/ai.mjs";
 
 // A mix every day: one video (Reel), one swipe carousel, one single picture,
 // in a different order each day. Layouts with several slides are never
@@ -75,27 +76,47 @@ if (worker) {
 }
 const inbox = inboxAll.filter((i) => !i.used);
 
-const start = new Date();
+// --week: the whole coming week at once (Connor, 25 Nov 2026): 4 drafts for
+// each day from next Monday, so he can approve the best 3 a day in one sitting.
+const week = args.includes("--week");
+const now = new Date();
+const nextMonday = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() + ((8 - now.getUTCDay()) % 7 || 7)));
+const start = week ? nextMonday : now;
 const today = start.toISOString().slice(0, 10);
 // --extra N --format video|carousel|single: N more drafts today (testing).
 const extra = Number(opt("--extra") ?? 0);
 const onlyFormat = opt("--format");
 if (!sampleDays && !extra && history.some((p) => p.date === today)) {
-  log(`Drafts for ${today} were already made; nothing to do.`);
+  log(`Drafts for ${today}${week ? " (the coming week)" : ""} were already made; nothing to do.`);
   process.exit(0);
 }
+const perDay = week ? Number(opt("--count") ?? 4) : count;
 
 // A saved scan reuses its topics; calendar events are always read fresh.
 const trends = scanFile ? { ...JSON.parse(readFileSync(scanFile, "utf8")), events: upcomingEvents() } : await scan({ log, inbox });
 writeFileSync(join(here, "drafts-last-scan.json"), JSON.stringify(trends, null, 1));
+log(`Writing: ${aiEnabled() ? `Gemini (${process.env.GEMINI_MODEL || "gemini-3.5-flash-lite"}), checked, with templates as fallback` : "templates (no GEMINI_API_KEY)"}`);
 
-const days = sampleDays || 1;
+const days = sampleDays || (week ? 7 : 1);
 const working = [...history];
+if (telegram && week && !sampleDays) {
+  const first = start.toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short", timeZone: "UTC" });
+  await telegram.say(
+    `📋 Drafts for the week from ${first}: ${7 * perDay} coming up (${perDay} a day).\n` +
+      "Approve your favourite 3 for each day (about 21). Instagram and Facebook then post 3 a day at 08:00, 12:30 and 18:30, " +
+      "and the TikTok week plan arrives at 21:00 with the ones you approved. Anything you approve after 21:00 goes in next week's TikTok plan.",
+  );
+}
 for (let d = 0; d < days; d++) {
   const date = new Date(start.getTime() + d * 86_400_000).toISOString().slice(0, 10);
   const label = sampleDays ? `sample-${date}` : date;
   const firstNumber = working.filter((p) => p.date === date).length + 1;
-  const posts = plan({ date: label, count: extra || count, trends, history: working, log, firstNumber: sampleDays ? 1 : firstNumber });
+  // Calendar moments as seen from that day (a week ahead, Black Friday must not show after it has passed).
+  const dayTrends = { ...trends, events: upcomingEvents(new Date(`${date}T06:00:00Z`)) };
+  let posts = plan({ date: label, count: extra || perDay, trends: dayTrends, history: working, log, firstNumber: sampleDays ? 1 : firstNumber });
+  // Fresh wording from Gemini, when its key is set (templates otherwise).
+  const context = [...dayTrends.events.map((e) => `${e.name} in ${e.days} days`), ...trends.rising.slice(0, 5).map((t) => `${t.name} is getting more attention${t.inbox ? " (from Connor)" : ""}`)].join("; ");
+  posts = await rewrite(posts, { recentHooks: working.map((p) => p.hook), context, similarity, log });
   const dir = join(here, "drafts", label);
   mkdirSync(dir, { recursive: true });
   const formats = onlyFormat ? posts.map(() => onlyFormat) : chooseFormats(posts, label);
@@ -103,13 +124,15 @@ for (let d = 0; d < days; d++) {
     const format = formats[k];
     const postDir = join(dir, `${post.id.split("-").pop()}-${post.idea}`);
     mkdirSync(postDir, { recursive: true });
-    const files = await render(draw(post, format), postDir);
-    const reel = format === "video" ? await makeReel(post, postDir) : null;
+    // --plan-only: choose and write the posts without drawing them (quick checks).
+    const planOnly = args.includes("--plan-only");
+    const files = planOnly ? [] : await render(draw(post, format), postDir);
+    const reel = format === "video" && !planOnly ? await makeReel(post, postDir) : null;
     const video = reel?.file ?? null;
     writeFileSync(join(postDir, "caption.txt"), post.caption);
     writeFileSync(join(postDir, "post.json"), JSON.stringify({ ...post, format, files, video }, null, 1));
     log(`${label}  ${format.padEnd(8)} ${post.layout.padEnd(9)} ${post.audience.padEnd(8)} ${post.hook}  [${post.source}]  ${files.length} slide(s)`);
-    const entry = { id: post.id, date, idea: post.idea, layout: post.layout, format, audience: post.audience, hook: post.hook, sub: post.sub, source: post.source, caption: post.caption, slides: files.length, status: "draft" };
+    const entry = { id: post.id, date, key: post.key, idea: post.idea, layout: post.layout, format, audience: post.audience, hook: post.hook, sub: post.sub, source: post.source, caption: post.caption, slides: files.length, status: "draft" };
     working.push(entry);
     if (telegram && !sampleDays) {
       if (worker) {
@@ -117,11 +140,11 @@ for (let d = 0; d < days; d++) {
         for (const [i, f] of files.entries()) await callWorker("PUT", `/drafts/${post.id}/img/${i + 1}`, readFileSync(f), "image/jpeg");
         if (video) await callWorker("PUT", `/drafts/${post.id}/video`, readFileSync(video), "video/mp4");
       }
-      entry.telegramMessageId = await telegram.sendDraft({ ...post, format }, files, { number: k + 1, of: posts.length, video });
+      entry.telegramMessageId = await telegram.sendDraft({ ...post, format }, files, { number: k + 1, of: posts.length, video, day: week ? new Date(`${date}T12:00:00Z`).toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short" }) : "" });
       if (worker) await callWorker("PUT", `/drafts/${post.id}`, entry);
     }
   }
-  if (posts.length < (extra || count)) log(`${label}: only ${posts.length} of ${extra || count} posts passed the checks`);
+  if (posts.length < (extra || perDay)) log(`${label}: only ${posts.length} of ${extra || perDay} posts passed the checks`);
 }
 if (!sampleDays) {
   writeFileSync(historyPath, `${JSON.stringify(working, null, 1)}\n`);

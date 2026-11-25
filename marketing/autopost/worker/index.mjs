@@ -44,7 +44,7 @@ const say = (env, text) => telegram(env, "sendMessage", { chat_id: env.TELEGRAM_
 const TIKTOK_TAGS = "#personaltrainer #fitnesstok #gymtok #pt #coach #fitnessuk #liftruna";
 const escHtml = (s) => String(s).replace(/[&<>]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" })[c]);
 
-// Weekly TikTok batch (Connor, 25 Nov 2026): every Sunday evening, the
+// Weekly TikTok batch (Connor, 25 Nov 2026): every Sunday at 21:00, the
 // approved posts not yet batched, laid out at 3 a day for the coming week
 // (08:00, 13:00 and 19:00 UK time), each with its media and caption, ready
 // to schedule in TikTok Studio, which posts them at those times.
@@ -375,7 +375,9 @@ const channels = (env) => [
 
 // At each posting time: the oldest approved draft goes out.
 async function postNext(env) {
-  const next = (await allDrafts(env)).find((d) => d.status === "approved");
+  // Weekly drafts are dated for their day; none goes out before it.
+  const today = new Date().toISOString().slice(0, 10);
+  const next = (await allDrafts(env)).find((d) => d.status === "approved" && (d.date ?? "") <= today);
   if (!next) return;
   const to = channels(env);
   if (!to.length || !(await igToken(env)) || !env.PUBLIC_ORIGIN) {
@@ -489,7 +491,7 @@ const worker = {
   },
 
   async scheduled(event, env, ctx) {
-    if (event.cron === "0 19 * * SUN") {
+    if (event.cron === "0 21 * * SUN") {
       ctx.waitUntil(sendTikTokBatch(env));
       return;
     }

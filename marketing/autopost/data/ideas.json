@@ -62,7 +62,7 @@
         "Ditch the WhatsApp group chaos"
       ],
       "sub": [
-        "Plans, bookings, check-ins and messages in one place.",
+        "Plans, bookings and messages in one place.",
         "One app for your clients, plans and bookings.",
         "Run your coaching from one place, not five."
       ]
@@ -121,7 +121,7 @@
       "hooks": [
         "Every client, one list",
         "Know who needs a nudge this week",
-        "Stop chasing check-ins"
+        "Stop chasing clients for updates"
       ],
       "points": [
         [
@@ -151,7 +151,7 @@
       ],
       "sub": [
         "Plan their sessions and see every workout they log. Built for UK coaches.",
-        "Programmes, bookings and check-ins for your {topic} clients, in one app.",
+        "Programmes, bookings and messages for your {topic} clients, in one app.",
         "Give your {topic} clients a plan they can follow and a community to share it with."
       ]
     },
@@ -169,7 +169,7 @@
       "sub": [
         "{Event} is {days} days away. Plan their sessions in LiftRuna.",
         "Set their plan now and see every session they log.",
-        "{Days} days to go. Programmes, bookings and check-ins in one place."
+        "{Days} days to go. Programmes, bookings and messages in one place."
       ]
     },
     {
@@ -386,6 +386,459 @@
         "Built in the UK as a home for trainers and their clients. Follow along.",
         "Built for how UK trainers actually work: gyms, sessions, clients.",
         "Trainers juggle five apps. We think one should be enough."
+      ]
+    },
+    {
+      "id": "pt-noshow",
+      "layout": "hook",
+      "audience": "trainers",
+      "screen": "trainerHome",
+      "hooks": [
+        "No-shows cost you money",
+        "Your calendar shouldn't live in WhatsApp",
+        "Who's actually booked in tomorrow?"
+      ],
+      "sub": [
+        "Clients request sessions, you confirm, and both of you get reminders.",
+        "Bookings, confirmations and reminders in one calendar.",
+        "See your week at a glance, with every session in one place."
+      ]
+    },
+    {
+      "id": "pt-number",
+      "layout": "hook",
+      "audience": "trainers",
+      "screen": "clients",
+      "hooks": [
+        "Stop giving clients your personal number",
+        "Work messages at 11pm? Not any more",
+        "Keep coaching chats out of your camera roll"
+      ],
+      "sub": [
+        "Message clients inside LiftRuna and keep your own number private.",
+        "Client messages live in the app, apart from your personal chats.",
+        "Talk to clients in one place, not spread across five apps."
+      ]
+    },
+    {
+      "id": "pt-programme",
+      "layout": "spotlight",
+      "audience": "trainers",
+      "screen": "trainerHome",
+      "hooks": [
+        "Write the plan once. See every session they log.",
+        "Know if they actually did the workout",
+        "Programmes your clients will open"
+      ],
+      "points": [
+        [
+          "Build a plan",
+          "Sessions and exercises, your way"
+        ],
+        [
+          "Assign it",
+          "It lands in your client's pocket"
+        ],
+        [
+          "See the logs",
+          "Every workout they record"
+        ]
+      ]
+    },
+    {
+      "id": "pt-myth",
+      "layout": "list",
+      "audience": "trainers",
+      "screen": "publicPage",
+      "hooks": [
+        "3 myths about getting new PT clients",
+        "What gets trainers new clients (and what doesn't)",
+        "Stop doing these to find clients"
+      ],
+      "points": [
+        [
+          "Myth: you need 10k followers",
+          "A clear page and one link does more"
+        ],
+        [
+          "Myth: discount to win them",
+          "Show your services and let them ask"
+        ],
+        [
+          "Myth: DMs are enough",
+          "Give them somewhere to land"
+        ]
+      ]
+    },
+    {
+      "id": "pt-dayinlife",
+      "layout": "steps",
+      "audience": "trainers",
+      "screen": "trainerHome",
+      "stepScreens": [
+        "trainerHome",
+        "clients",
+        "inviteLink"
+      ],
+      "hooks": [
+        "A trainer's morning on LiftRuna",
+        "How a PT runs their day in one app",
+        "Coffee, clients, done"
+      ],
+      "points": [
+        [
+          "Check your week",
+          "Sessions and requests at a glance"
+        ],
+        [
+          "Check in on clients",
+          "Who's training, who's quiet"
+        ],
+        [
+          "Sign someone new",
+          "Send an invite link in seconds"
+        ]
+      ]
+    },
+    {
+      "id": "pt-labels",
+      "layout": "hook",
+      "audience": "trainers",
+      "screen": "clients",
+      "hooks": [
+        "Online, in-person, hybrid: sorted",
+        "Colour-code your clients your way",
+        "Know your groups at a glance"
+      ],
+      "sub": [
+        "Labels and colours for your clients, only you can see them.",
+        "Tag clients however suits your coaching.",
+        "Organise your client list your way, in seconds."
+      ]
+    },
+    {
+      "id": "pt-directory",
+      "layout": "hook",
+      "audience": "trainers",
+      "screen": "publicPage",
+      "hooks": [
+        "Be findable by people looking for a coach",
+        "Get listed where clients are looking",
+        "Your next client might be searching right now"
+      ],
+      "sub": [
+        "Trainers appear in the LiftRuna trainer directory by specialism and town.",
+        "People find trainers by specialism and town, then ask to train with them.",
+        "A directory of UK trainers, with your page in it."
+      ]
+    },
+    {
+      "id": "pt-poll2",
+      "layout": "question",
+      "audience": "trainers",
+      "hooks": [
+        "Trainers: in-person or online?",
+        "Do you charge per session or monthly?",
+        "Morning clients or evening clients?"
+      ],
+      "options": [
+        [
+          "In-person",
+          "Online"
+        ],
+        [
+          "Per session",
+          "Monthly"
+        ],
+        [
+          "Mornings",
+          "Evenings"
+        ]
+      ]
+    },
+    {
+      "id": "pt-tip-onboard",
+      "layout": "tip",
+      "audience": "trainers",
+      "hooks": [
+        "Make day one feel easy",
+        "First impressions keep clients",
+        "Show them the plan early"
+      ],
+      "sub": [
+        "New clients stay when they know what's next. Send the invite, then their first plan.",
+        "A clear first week beats a long consultation form.",
+        "Clients commit when they can see where they're going."
+      ]
+    },
+    {
+      "id": "pt-tip-content",
+      "layout": "tip",
+      "audience": "trainers",
+      "hooks": [
+        "Post your clients' wins (with permission)",
+        "Your best marketing is a happy client",
+        "Share the process, not just the results"
+      ],
+      "sub": [
+        "Ask first, then celebrate a client's PB on your feed.",
+        "A client cheering you on beats any advert.",
+        "Show what training with you is like, week by week."
+      ]
+    },
+    {
+      "id": "pt-event2",
+      "layout": "countdown",
+      "audience": "trainers",
+      "screen": "trainerHome",
+      "needs": "event",
+      "hooks": [
+        "Plan their run-up now",
+        "Busy season is coming",
+        "Fill your diary before it hits"
+      ],
+      "sub": [
+        "{Event} is {days} days away. Plans and bookings ready in LiftRuna.",
+        "Get their programmes in place before {event}.",
+        "Open your calendar and let clients book ahead."
+      ]
+    },
+    {
+      "id": "pt-topic2",
+      "layout": "spotlight",
+      "audience": "trainers",
+      "screen": "clients",
+      "needs": "topic",
+      "hooks": [
+        "Coach {topic}? Here's your setup",
+        "{Topic} clients, one app",
+        "Built for {topic} coaches too"
+      ],
+      "points": [
+        [
+          "Plans",
+          "Write {topic} sessions once"
+        ],
+        [
+          "Bookings",
+          "Clients book their slots"
+        ],
+        [
+          "Logs",
+          "See every session they record"
+        ]
+      ]
+    },
+    {
+      "id": "mem-pb",
+      "layout": "hook",
+      "audience": "everyone",
+      "screen": "feed",
+      "hooks": [
+        "New PB? Make it count",
+        "Track every personal best",
+        "Your PBs, all in one place"
+      ],
+      "sub": [
+        "Log your lifts and see your bests add up.",
+        "Personal bests from your logged workouts, kept for you.",
+        "Share a PB with your crew and your coach."
+      ]
+    },
+    {
+      "id": "mem-coach",
+      "layout": "hook",
+      "audience": "everyone",
+      "screen": "publicPage",
+      "hooks": [
+        "Looking for a personal trainer?",
+        "Find a coach near you",
+        "The right coach changes everything"
+      ],
+      "sub": [
+        "Browse UK trainers by specialism and town, then ask to train with them.",
+        "See their page, their services and their gyms.",
+        "Find someone who coaches what you love."
+      ]
+    },
+    {
+      "id": "mem-follow",
+      "layout": "hook",
+      "audience": "everyone",
+      "screen": "comments",
+      "hooks": [
+        "Follow the people who keep you going",
+        "Your gym friends, online",
+        "Motivation is contagious"
+      ],
+      "sub": [
+        "Follow friends and your coach, and see their sessions in your feed.",
+        "Likes and comments from people who get it.",
+        "A feed of training, not adverts."
+      ]
+    },
+    {
+      "id": "mem-notify",
+      "layout": "tip",
+      "audience": "everyone",
+      "hooks": [
+        "Never miss a session again",
+        "Your coach replied",
+        "Booked in? You'll know"
+      ],
+      "sub": [
+        "Turn on notifications for bookings and messages.",
+        "Get a notification when your coach messages you.",
+        "Booking confirmations and changes, straight to your phone."
+      ]
+    },
+    {
+      "id": "mem-poll2",
+      "layout": "question",
+      "audience": "everyone",
+      "hooks": [
+        "Leg day: love it or hate it?",
+        "Cardio before or after weights?",
+        "Free weights or machines?",
+        "Rest day: total rest or a walk?"
+      ],
+      "options": [
+        [
+          "Love it",
+          "Hate it"
+        ],
+        [
+          "Before",
+          "After"
+        ],
+        [
+          "Free weights",
+          "Machines"
+        ],
+        [
+          "Total rest",
+          "A walk"
+        ]
+      ]
+    },
+    {
+      "id": "mem-list",
+      "layout": "list",
+      "audience": "everyone",
+      "screen": "feed",
+      "hooks": [
+        "Why training with a coach works",
+        "4 things a good coach does",
+        "Signs you're ready for a coach"
+      ],
+      "points": [
+        [
+          "A plan made for you",
+          "Not a copy-paste programme"
+        ],
+        [
+          "Someone who notices",
+          "When you're on a roll, or quiet"
+        ],
+        [
+          "Sessions in the diary",
+          "Harder to skip"
+        ],
+        [
+          "A crew behind you",
+          "Training is better together"
+        ]
+      ]
+    },
+    {
+      "id": "mem-tip2",
+      "layout": "tip",
+      "audience": "everyone",
+      "hooks": [
+        "Progress is quiet, then loud",
+        "Show up for the boring sessions",
+        "Consistency beats intensity",
+        "Plan the week on Sunday"
+      ],
+      "sub": [
+        "Most weeks feel the same. Keep logging and the change shows up.",
+        "The sessions you almost skipped are the ones that count.",
+        "Three steady sessions beat one heroic one.",
+        "Ten minutes on Sunday sets up the whole week."
+      ]
+    },
+    {
+      "id": "mem-topic2",
+      "layout": "spotlight",
+      "audience": "everyone",
+      "screen": "feed",
+      "needs": "topic",
+      "hooks": [
+        "Training for {topic}?",
+        "{Topic}: do it with a coach",
+        "Take your {topic} further"
+      ],
+      "points": [
+        [
+          "A plan",
+          "From a coach who gets {topic}"
+        ],
+        [
+          "Your logs",
+          "Every session in one place"
+        ],
+        [
+          "Your crew",
+          "Share it and get cheered on"
+        ]
+      ]
+    },
+    {
+      "id": "mem-event2",
+      "layout": "countdown",
+      "audience": "everyone",
+      "screen": "comments",
+      "needs": "event",
+      "hooks": [
+        "Make a plan, not a promise",
+        "Start before you feel ready",
+        "Future you says thanks"
+      ],
+      "sub": [
+        "{Event} is {days} days away. Find a coach on LiftRuna.",
+        "Book a session and get a plan in place.",
+        "Share the plan with your crew and stick to it."
+      ]
+    },
+    {
+      "id": "bts-beta",
+      "layout": "hook",
+      "audience": "trainers",
+      "screen": "inviteOpen",
+      "hooks": [
+        "We're building this with trainers, not for them",
+        "Tell us what's missing",
+        "Your feedback ships"
+      ],
+      "sub": [
+        "Beta trainers tell us what they need, and we build it.",
+        "Closed beta: help shape the app you'll use every day.",
+        "Every feature so far started with a trainer's request."
+      ]
+    },
+    {
+      "id": "bts-why2",
+      "layout": "tip",
+      "audience": "everyone",
+      "hooks": [
+        "Fitness apps forgot about coaches",
+        "One app for coach and client",
+        "Training is a relationship"
+      ],
+      "sub": [
+        "Most apps are for solo training. LiftRuna puts your coach in the loop.",
+        "Plans, bookings, messages and your community, together.",
+        "The best results come from a coach and a client working together."
       ]
     }
   ],

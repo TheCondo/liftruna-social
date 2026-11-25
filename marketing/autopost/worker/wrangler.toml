@@ -14,9 +14,9 @@ binding = "POSTS"
 id = "bf67f1037bef401cac6765a4ee566099"
 
 # Posting times, in UTC (UK time in winter, an hour earlier in summer):
-# 08:00, 12:30 and 18:30. Sundays at 19:00: the weekly TikTok batch.
+# 08:00, 12:30 and 18:30. Sundays at 21:00: the weekly TikTok batch.
 [triggers]
-crons = ["0 8 * * *", "30 12 * * *", "30 18 * * *", "0 19 * * SUN"]
+crons = ["0 8 * * *", "30 12 * * *", "30 18 * * *", "0 21 * * SUN"]
 
 [vars]
 IG_API_VERSION = "v27.0"
