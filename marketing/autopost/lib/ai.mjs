@@ -26,10 +26,13 @@ Voice: confident, warm, punchy, British English, no hype, no emojis in hooks, no
 Rewrite the words of each post below so it is fresh and scroll-stopping. Keep each post's purpose, audience and structure:
 same number of points (each point: a short bold line and a short explanation) and options if present.
 This week's topical context: ${ctx.context || "nothing special"}.
+Use that context ONLY in posts that are already about it (their "about" field names it); never drag it into other posts.
 Hooks already used recently (do NOT reuse or closely echo): ${ctx.recentHooks.slice(-40).map((h) => JSON.stringify(h)).join(", ")}.
 Only mention these real features: ${FEATURES.join("; ")}.
 Never: weight-loss numbers or promises, diets, fasting, body-shaming, before/after, medical or health claims, guaranteed results,
-supplements or steroids, anything aimed at under-18s (no school or exam themes), invented statistics, testimonials or user numbers.
+supplements or steroids, anything aimed at under-18s (no school or exam themes), invented statistics, testimonials or user numbers,
+promises that a trainer's business, followers, income or clients will grow, or claims about how secure the app is.
+LiftRuna has NO payments, invoices, nutrition or food tracking, habit tracking, check-ins, AI, wearables or video calls: never mention them.
 Limits: hook at most 60 characters; sub at most 110; point title at most 32; point detail at most 55; option at most 22; body at most 300.
 Return ONLY JSON: {"posts":[{"i":<index>,"hook":"","sub":"","points":[["",""]],"options":["",""],"body":""}]}.
 "body" is the caption text before the call to action (2-4 short lines).
@@ -48,27 +51,53 @@ function textOf(out) {
   return found.join("\n");
 }
 
-async function ask(text) {
+// Free-tier models to try in turn (Google's pricing page, 25 Nov 2026).
+const MODELS = () => [...new Set([MODEL(), "gemini-3.5-flash-lite", "gemini-3.6-flash", "gemini-4-hydrogen"])];
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+async function askModel(model, text) {
   const key = process.env.GEMINI_API_KEY;
   const headers = { "Content-Type": "application/json", "x-goog-api-key": key };
   const base = "https://generativelanguage.googleapis.com/v1beta";
   // generateContent first; the newer Interactions API as a fallback.
-  let res = await fetch(`${base}/models/${MODEL()}:generateContent`, {
+  let res = await fetch(`${base}/models/${model}:generateContent`, {
     method: "POST",
     headers,
     body: JSON.stringify({ contents: [{ role: "user", parts: [{ text }] }], generationConfig: { responseMimeType: "application/json", temperature: 1 } }),
   });
-  if (!res.ok) {
+  if (!res.ok && res.status !== 429 && res.status !== 503) {
     res = await fetch(`${base}/interactions`, {
       method: "POST",
       headers: { ...headers, "Api-Revision": "2026-05-20" },
-      body: JSON.stringify({ model: MODEL(), input: text, response_format: { type: "text", mime_type: "application/json" } }),
+      body: JSON.stringify({ model, input: text, response_format: { type: "text", mime_type: "application/json" } }),
     });
   }
-  if (!res.ok) throw new Error(`Gemini ${res.status}: ${(await res.text()).slice(0, 200)}`);
+  if (!res.ok) {
+    const error = new Error(`Gemini ${model} ${res.status}: ${(await res.text()).slice(0, 160)}`);
+    error.busy = res.status === 429 || res.status === 503;
+    throw error;
+  }
   const raw = textOf(await res.json());
   const json = raw.slice(raw.indexOf("{"), raw.lastIndexOf("}") + 1);
   return JSON.parse(json);
+}
+
+// Busy or rate-limited: wait and retry, then try the next free model.
+async function ask(text, log) {
+  let last;
+  for (const model of MODELS()) {
+    for (const wait of [0, 8000, 20000]) {
+      if (wait) await sleep(wait);
+      try {
+        return { answer: await askModel(model, text), model };
+      } catch (error) {
+        last = error;
+        if (!error.busy) break;
+      }
+    }
+    log(`  ${model} unavailable, trying another`);
+  }
+  throw last;
 }
 
 const short = (s, n) => typeof s === "string" && s.trim().length > 0 && s.trim().length <= n;
@@ -80,7 +109,9 @@ export async function rewrite(posts, { recentHooks, context, similarity, log = (
   if (!aiEnabled() || !posts.length) return posts;
   let answer;
   try {
-    answer = await ask(prompt(posts, { recentHooks, context }));
+    const got = await ask(prompt(posts, { recentHooks, context }), log);
+    answer = got.answer;
+    log(`  written by ${got.model}`);
   } catch (error) {
     log(`  AI writing unavailable (${error.message}); using templates`);
     return posts;
