@@ -1,0 +1,13 @@
+node_modules/
+# Keys live only in .env.local on a computer, and as GitHub secrets.
+.env*
+# Drafts and scans are rebuilt every run.
+marketing/autopost/drafts/
+marketing/autopost/drafts-last-scan.json
+# Local state when testing without the Worker (the Worker keeps the real state).
+marketing/autopost/data/history.json
+marketing/autopost/data/inbox.json
+marketing/autopost/data/telegram-state.json
+# Cloudflare build files and local test keys.
+marketing/autopost/worker/.wrangler/
+marketing/autopost/worker/.dev.vars

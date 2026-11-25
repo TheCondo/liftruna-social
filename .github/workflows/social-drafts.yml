@@ -1,0 +1,50 @@
+name: Social post drafts
+
+# The social post agent (D86): every morning, scan what's topical, make 3
+# drafts (a video, a swipe carousel and a single picture), and send them to
+# Connor in Telegram. The Cloudflare Worker then handles his taps and posts
+# the approved ones, so no computer needs to be on.
+# GitHub runs scheduled jobs only from main, so this starts once merged
+# (planned for 1 Dec 2026, when the free minutes reset). About 4 minutes a run.
+on:
+  schedule:
+    - cron: "30 6 * * *" # 06:30 UTC
+  workflow_dispatch:
+
+concurrency:
+  group: social-drafts
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  drafts:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - run: npx playwright install --with-deps chromium
+      - name: FFmpeg for the videos
+        run: command -v ffmpeg || (sudo apt-get update && sudo apt-get install -y ffmpeg)
+      - name: Make and send today's drafts
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          WORKER_URL: ${{ secrets.WORKER_URL }}
+          DRAFTS_SECRET: ${{ secrets.DRAFTS_SECRET }}
+        run: node marketing/autopost/make-drafts.mjs --send
+      - name: Tell Connor if it failed
+        if: failure()
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: |
+          curl -s -X POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
+            --data-urlencode "chat_id=${TELEGRAM_CHAT_ID}" \
+            --data-urlencode "text=⚠️ Today's drafts could not be made (GitHub job failed). Already-approved posts still go out." > /dev/null

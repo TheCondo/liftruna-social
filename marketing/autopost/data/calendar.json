@@ -1,0 +1,19 @@
+{
+  "_about": "UK fitness moments. month/day of the main date; 'lead' = how many days before to start posting about it. Dates that move each year (marathons) are checked yearly. Reviewed by Connor.",
+  "events": [
+    { "id": "new-year", "name": "New Year", "month": 1, "day": 1, "lead": 10, "angle": "fresh-start plans that last past January, with a coach who checks in" },
+    { "id": "blue-monday", "name": "the third Monday of January", "month": 1, "day": 19, "lead": 4, "angle": "keeping going when motivation dips, with a coach and community behind you" },
+    { "id": "february-restart", "name": "February", "month": 2, "day": 1, "lead": 4, "angle": "restarting after a slow January, no guilt" },
+    { "id": "spring", "name": "spring", "month": 3, "day": 20, "lead": 7, "angle": "lighter evenings and outdoor sessions" },
+    { "id": "london-marathon", "name": "the London Marathon", "month": 4, "day": 26, "lead": 30, "angle": "training plans and long-run logs shared with a coach" },
+    { "id": "mental-health-week", "name": "Mental Health Awareness Week", "month": 5, "day": 11, "lead": 5, "angle": "training as part of feeling good, with a community behind you" },
+    { "id": "summer", "name": "summer", "month": 6, "day": 21, "lead": 10, "angle": "keeping training going through holidays and busy weeks" },
+    { "id": "back-to-routine", "name": "September", "month": 9, "day": 1, "lead": 7, "angle": "getting back into a routine after summer" },
+    { "id": "great-north-run", "name": "the Great North Run", "month": 9, "day": 13, "lead": 21, "angle": "half-marathon training with a coach" },
+    { "id": "national-fitness-day", "name": "National Fitness Day", "month": 9, "day": 23, "lead": 5, "angle": "how trainers and members use LiftRuna together" },
+    { "id": "clocks-go-back", "name": "the clocks going back", "month": 10, "day": 25, "lead": 5, "angle": "dark evenings: indoor sessions and staying consistent" },
+    { "id": "movember", "name": "Movember", "month": 11, "day": 1, "lead": 7, "angle": "moving more together, team challenges" },
+    { "id": "black-friday", "name": "Black Friday", "month": 11, "day": 27, "lead": 3, "angle": "the best thing you can invest in is a coach who keeps you accountable" },
+    { "id": "christmas", "name": "Christmas", "month": 12, "day": 25, "lead": 12, "angle": "short sessions over the holidays and a plan ready for January" }
+  ]
+}

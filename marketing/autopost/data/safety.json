@@ -1,0 +1,25 @@
+{
+  "_about": "Checked on every draft before Connor sees it (D86). 'words' and 'patterns' reject the draft; 'blockedTopics' are skipped even when trending. Based on UK advertising rules for health and fitness claims, and the children's assessments (nothing aimed at under-18s). Posts don't have to say 18+ (Connor, 24 Nov 2026).",
+  "words": [
+    "weight loss", "lose weight", "fat loss", "burn fat", "fat burning", "fat-burning", "melt", "shred", "shredded", "skinny", "thin",
+    "before and after", "before/after", "transformation", "bikini body", "beach body", "summer body", "body goals",
+    "detox", "cleanse", "fasting", "starve", "starving", "crash diet", "cut calories", "calorie deficit", "low calorie",
+    "cure", "cures", "heal", "treat", "treats", "prevent", "medical", "doctor", "diagnose", "diagnosis", "disease", "anxiety", "depression",
+    "guaranteed", "guarantee", "results in", "overnight", "in just", "miracle", "secret trick", "100%",
+    "steroid", "sarm", "peptide", "testosterone", "supplement", "pre-workout", "fat burner",
+    "school", "exam", "gcse", "a-level", "uni freshers", "teen", "kids", "children",
+    "free money", "get rich", "side hustle"
+  ],
+  "patterns": [
+    "\\b\\d+\\s?(kg|kgs|lb|lbs|pounds|stone)\\b",
+    "\\blose\\s+\\d+",
+    "\\b\\d+\\s?(days?|weeks?)\\s+to\\s+(abs|a new you|your dream)",
+    "\\bdrop\\s+a\\s+(dress|jean|clothes)\\s+size",
+    "\\bbmi\\b"
+  ],
+  "blockedTopics": [
+    "anorexia", "bulimia", "eating disorder", "steroid", "anabolic", "sarm", "ozempic", "semaglutide", "weight loss drug",
+    "death", "dies", "died", "injury", "injured", "collapse", "cardiac", "cancer", "suicide", "self-harm", "attack", "war", "shooting",
+    "election", "scandal", "court", "trial", "arrest", "child", "school"
+  ]
+}

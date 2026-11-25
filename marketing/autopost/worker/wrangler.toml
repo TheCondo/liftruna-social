@@ -1,0 +1,25 @@
+# LiftRuna posts Worker (D86). Cloudflare free plan: no card, no charges.
+# Deploy from the project folder:  npx wrangler@4 deploy --config marketing/autopost/worker/wrangler.toml
+# Secrets (never in this file): TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID, WEBHOOK_SECRET,
+# DRAFTS_SECRET, and later IG_TOKEN and IG_USER_ID. Set with marketing/autopost/worker-setup.mjs.
+name = "liftruna-posts"
+main = "index.mjs"
+compatibility_date = "2026-11-01"
+workers_dev = true
+
+# Draft records, slide images and the trend inbox. The id is filled in by
+# worker-setup.mjs after the namespace is created.
+[[kv_namespaces]]
+binding = "POSTS"
+id = "bf67f1037bef401cac6765a4ee566099"
+
+# Posting times, in UTC (UK time in winter, an hour earlier in summer):
+# 08:00, 12:30 and 18:30.
+[triggers]
+crons = ["0 8 * * *", "30 12 * * *", "30 18 * * *"]
+
+[vars]
+IG_API_VERSION = "v27.0"
+# New Meta apps use "Unified login" (graph.facebook.com); older ones graph.instagram.com.
+IG_GRAPH_HOST = "graph.facebook.com"
+PUBLIC_ORIGIN = "https://liftruna-posts.green-bonus-8c8f.workers.dev"
