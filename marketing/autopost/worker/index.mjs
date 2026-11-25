@@ -241,6 +241,8 @@ async function graph(path, params, token, method = "POST", host = "graph.faceboo
 }
 
 async function pageToken(env) {
+  // A Page key made from a long-lived personal key does not expire.
+  if (env.FB_PAGE_TOKEN) return env.FB_PAGE_TOKEN;
   const cached = await env.POSTS.get("fb_page_token");
   if (cached) return cached;
   const { data } = await graph("me/accounts", { fields: "id,access_token" }, env.FB_SYSTEM_TOKEN, "GET");
@@ -285,7 +287,7 @@ async function publishFacebook(env, d, origin) {
 // time without posting twice where it already worked.
 const channels = (env) => [
   ...(env.IG_USER_ID ? [{ key: "igMediaId", name: "Instagram", go: publish }] : []),
-  ...(env.FB_SYSTEM_TOKEN && env.FB_PAGE_ID ? [{ key: "fbPostId", name: "Facebook", go: publishFacebook }] : []),
+  ...((env.FB_PAGE_TOKEN || env.FB_SYSTEM_TOKEN) && env.FB_PAGE_ID ? [{ key: "fbPostId", name: "Facebook", go: publishFacebook }] : []),
 ];
 
 // At each posting time: the oldest approved draft goes out.
