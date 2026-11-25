@@ -47,7 +47,7 @@ const buttons = (id) => ({
 const results = {
   approved: "✅ Approved: posts at the next posting time",
   rejected: "❌ Rejected",
-  posted: "📣 Posted to Instagram",
+  posted: "📣 Posted",
 };
 
 const getDraft = (env, id) => env.POSTS.get(`draft:${id}`, "json");
@@ -225,11 +225,75 @@ async function renewKey(env) {
   }
 }
 
+// Facebook Page (Pages API). FB_SYSTEM_TOKEN is the business portfolio's
+// system-user key (never expires); the Page's own key is fetched from it
+// (/me/accounts) and kept for a day.
+async function graph(path, params, token, method = "POST", host = "graph.facebook.com") {
+  const v = "v27.0";
+  const query = method === "GET" ? `?${new URLSearchParams({ ...params, access_token: token })}` : "";
+  const res = await fetch(`https://${host}/${v}/${path}${query}`, {
+    method,
+    ...(method === "POST" ? { body: new URLSearchParams({ ...params, access_token: token }) } : {}),
+  });
+  const out = await res.json();
+  if (!res.ok || out.error) throw new Error(`Facebook ${path}: ${out.error?.message ?? res.status}`);
+  return out;
+}
+
+async function pageToken(env) {
+  const cached = await env.POSTS.get("fb_page_token");
+  if (cached) return cached;
+  const { data } = await graph("me/accounts", { fields: "id,access_token" }, env.FB_SYSTEM_TOKEN, "GET");
+  const page = data.find((p) => p.id === String(env.FB_PAGE_ID));
+  if (!page) throw new Error("the key can no longer reach the LiftRuna Page");
+  await env.POSTS.put("fb_page_token", page.access_token, { expirationTtl: 86_400 });
+  return page.access_token;
+}
+
+async function publishFacebook(env, d, origin) {
+  const token = await pageToken(env);
+  const page = env.FB_PAGE_ID;
+  const url = (n) => `${origin}/img/${d.id}/${n}.jpg`;
+  if (d.format === "video") {
+    // Facebook Reel: start, let Facebook fetch the file, wait, then publish.
+    const { video_id: video } = await graph(`${page}/video_reels`, { upload_phase: "start" }, token);
+    const up = await fetch(`https://rupload.facebook.com/video-upload/v27.0/${video}`, {
+      method: "POST",
+      headers: { Authorization: `OAuth ${token}`, file_url: `${origin}/img/${d.id}/video.mp4` },
+    });
+    if (!up.ok) throw new Error(`Facebook video upload: ${(await up.text()).slice(0, 200)}`);
+    for (let i = 0; i < 40; i++) {
+      const { status } = await graph(video, { fields: "status" }, token, "GET");
+      if (status?.uploading_phase?.status === "complete" || status?.video_status === "upload_complete" || status?.video_status === "ready") break;
+      if (status?.video_status === "error") throw new Error("Facebook could not process the video");
+      await sleep(5000);
+    }
+    await graph(`${page}/video_reels`, { video_id: video, upload_phase: "finish", video_state: "PUBLISHED", description: d.caption }, token);
+    return video;
+  }
+  if (d.slides === 1) return (await graph(`${page}/photos`, { url: url(1), caption: d.caption }, token)).post_id;
+  const media = {};
+  for (let n = 1; n <= Math.min(d.slides, 10); n++) {
+    const { id } = await graph(`${page}/photos`, { url: url(n), published: "false" }, token);
+    media[`attached_media[${n - 1}]`] = JSON.stringify({ media_fbid: id });
+  }
+  return (await graph(`${page}/feed`, { message: d.caption, ...media }, token)).id;
+}
+
+// Where an approved draft goes: Instagram, and the Facebook Page once
+// connected. Each is posted once; a failure is retried at the next posting
+// time without posting twice where it already worked.
+const channels = (env) => [
+  ...(env.IG_USER_ID ? [{ key: "igMediaId", name: "Instagram", go: publish }] : []),
+  ...(env.FB_SYSTEM_TOKEN && env.FB_PAGE_ID ? [{ key: "fbPostId", name: "Facebook", go: publishFacebook }] : []),
+];
+
 // At each posting time: the oldest approved draft goes out.
 async function postNext(env) {
   const next = (await allDrafts(env)).find((d) => d.status === "approved");
   if (!next) return;
-  if (!(await igToken(env)) || !env.IG_USER_ID || !env.PUBLIC_ORIGIN) {
+  const to = channels(env);
+  if (!to.length || !(await igToken(env)) || !env.PUBLIC_ORIGIN) {
     if (!next.toldNotConnected) {
       next.toldNotConnected = true;
       await putDraft(env, next);
@@ -237,17 +301,29 @@ async function postNext(env) {
     }
     return;
   }
-  try {
-    next.igMediaId = await publish(env, next, env.PUBLIC_ORIGIN);
+  const done = [];
+  const failed = [];
+  for (const ch of to) {
+    if (next[ch.key]) continue;
+    try {
+      next[ch.key] = await ch.go(env, next, env.PUBLIC_ORIGIN);
+      done.push(ch.name);
+    } catch (error) {
+      failed.push(`${ch.name}: ${String(error.message).slice(0, 200)}`);
+    }
+    await putDraft(env, next);
+  }
+  if (to.every((ch) => next[ch.key])) {
     next.status = "posted";
     next.postedAt = new Date().toISOString();
     await putDraft(env, next);
     await showResult(env, next);
-    await say(env, `📣 Posted to Instagram: "${next.hook}"`);
-  } catch (error) {
-    next.lastError = String(error.message).slice(0, 300);
+  }
+  if (done.length) await say(env, `📣 Posted to ${done.join(" and ")}: "${next.hook}"`);
+  if (failed.length) {
+    next.lastError = failed.join(" | ");
     await putDraft(env, next);
-    await say(env, `⚠️ Couldn't post ${next.id} to Instagram: ${next.lastError}. It stays approved and will be tried at the next posting time.`);
+    await say(env, `⚠️ Couldn't post ${next.id} to ${failed.join("; ")}. It will be tried again at the next posting time.`);
   }
 }
 
