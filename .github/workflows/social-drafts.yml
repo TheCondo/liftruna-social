@@ -1,11 +1,10 @@
 name: Social post drafts
 
-# The social post agent (D86): every morning, scan what's topical, make 3
-# drafts (a video, a swipe carousel and a single picture), and send them to
-# Connor in Telegram. The Cloudflare Worker then handles his taps and posts
-# the approved ones, so no computer needs to be on.
-# GitHub runs scheduled jobs only from main, so this starts once merged
-# (planned for 1 Dec 2026, when the free minutes reset). About 4 minutes a run.
+# Every morning: scan what's topical, make 3 drafts (a video, a swipe
+# carousel and a single picture), and send them to Connor in Telegram. The
+# Cloudflare Worker then handles his taps and posts the approved ones, so no
+# computer needs to be on. This repository is public, so GitHub's minutes
+# are free and unlimited.
 on:
   schedule:
     - cron: "30 6 * * *" # 06:30 UTC
@@ -16,12 +15,12 @@ concurrency:
   cancel-in-progress: false
 
 permissions:
-  contents: read
+  contents: write # only to save the daily "last run" note below
 
 jobs:
   drafts:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 25
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -39,6 +38,15 @@ jobs:
           WORKER_URL: ${{ secrets.WORKER_URL }}
           DRAFTS_SECRET: ${{ secrets.DRAFTS_SECRET }}
         run: node marketing/autopost/make-drafts.mjs --send
+      # GitHub switches off scheduled jobs in public repositories after 60
+      # days with no activity, so each run saves a one-line note.
+      - name: Save the last-run note
+        run: |
+          date -u +"%Y-%m-%dT%H:%M:%SZ" > marketing/autopost/data/last-run.txt
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add marketing/autopost/data/last-run.txt
+          git commit -m "Drafts sent $(date -u +%Y-%m-%d)" && git push || echo "nothing to save"
       - name: Tell Connor if it failed
         if: failure()
         env:
