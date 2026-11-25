@@ -49,6 +49,10 @@ Drafts land in `marketing/autopost/drafts/<date>/` (not in git): one folder per 
 - **Pictures:** JPEG only (Meta's rule). The Worker shows them publicly only once a draft is approved.
 - **First post:** https://www.instagram.com/p/DgKUgg4ibuL/ (25 Nov 2026).
 
+## TikTok (by hand, with a ready pack)
+
+TikTok does not approve apps that post to their owner's own accounts, and does not let apps add logos or promotional text to content (developer guidelines, checked 25 Nov 2026), so TikTok is not posted automatically. When Connor approves a draft, the Worker also sends him a **TikTok pack** in Telegram: the video (or the photos, for photo mode) and a tap-to-copy caption with TikTok hashtags, plus a reminder to add a trending sound and switch on Content disclosure → Your brand. Posting it takes about a minute in the TikTok app.
+
 ## Not built yet
 
 

@@ -35,6 +35,41 @@ async function telegram(env, method, body) {
 }
 const say = (env, text) => telegram(env, "sendMessage", { chat_id: env.TELEGRAM_CHAT_ID, text });
 
+// TikTok pack (D86). TikTok does not approve apps that post to their
+// owner's own account, and does not let apps add logos or promotional
+// text, so TikTok is posted by Connor by hand: when he approves a draft,
+// the video (or the photos, for photo mode) and a ready caption arrive here.
+// Telegram fetches the files from this Worker, which serves them only once
+// the draft is approved.
+const TIKTOK_TAGS = "#personaltrainer #fitnesstok #gymtok #pt #coach #fitnessuk #liftruna";
+const escHtml = (s) => String(s).replace(/[&<>]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" })[c]);
+
+async function sendTikTokPack(env, d) {
+  const origin = env.PUBLIC_ORIGIN;
+  const chat = env.TELEGRAM_CHAT_ID;
+  if (d.format === "video") {
+    await telegram(env, "sendVideo", { chat_id: chat, video: `${origin}/img/${d.id}/video.mp4`, supports_streaming: true });
+  } else if ((d.slides ?? 1) > 1) {
+    const media = Array.from({ length: Math.min(d.slides, 10) }, (_, i) => ({ type: "photo", media: `${origin}/img/${d.id}/${i + 1}.jpg` }));
+    await telegram(env, "sendMediaGroup", { chat_id: chat, media });
+  } else {
+    await telegram(env, "sendPhoto", { chat_id: chat, photo: `${origin}/img/${d.id}/1.jpg` });
+  }
+  // The Instagram caption without its hashtags, plus TikTok ones.
+  const text = d.caption.split("\n").filter((l) => !l.trim().startsWith("#")).join("\n").trim();
+  await telegram(env, "sendMessage", {
+    chat_id: chat,
+    parse_mode: "HTML",
+    text:
+      `🎵 <b>TikTok pack for ${escHtml(d.id)}</b>\n` +
+      `1. Save the ${d.format === "video" ? "video" : "photos"} above.\n` +
+      `2. In TikTok: + → upload${d.format === "video" ? "" : " (photo mode)"} → add a trending sound.\n` +
+      "3. Tap the caption below to copy it, and paste it in.\n" +
+      "4. Under More options, turn on Content disclosure → Your brand (TikTok's rule for promotional posts).\n\n" +
+      `<code>${escHtml(`${text}\n\n${TIKTOK_TAGS}`)}</code>`,
+  });
+}
+
 const buttons = (id) => ({
   inline_keyboard: [
     [
@@ -103,6 +138,15 @@ async function onTelegram(env, update) {
     if (action !== "e") {
       await putDraft(env, d);
       await showResult(env, d);
+    }
+    if (action === "a" && !d.tiktokPackSent) {
+      try {
+        await sendTikTokPack(env, d);
+        d.tiktokPackSent = new Date().toISOString();
+        await putDraft(env, d);
+      } catch (error) {
+        await say(env, `Couldn't send the TikTok pack for ${d.id}: ${String(error.message).slice(0, 200)}`);
+      }
     }
     return;
   }
