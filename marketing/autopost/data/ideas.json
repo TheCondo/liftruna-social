@@ -150,7 +150,7 @@
         "Trainers: your {topic} clients need a plan"
       ],
       "sub": [
-        "Plan their sessions and see every workout they log. Built for UK coaches.",
+        "Plan their sessions and keep everything in one place. Built for UK coaches.",
         "Programmes, bookings and messages for your {topic} clients, in one app.",
         "Give your {topic} clients a plan they can follow and a community to share it with."
       ]
@@ -168,7 +168,7 @@
       ],
       "sub": [
         "{Event} is {days} days away. Plan their sessions in LiftRuna.",
-        "Set their plan now and see every session they log.",
+        "Set their plan now and keep their bookings in one place.",
         "{Days} days to go. Programmes, bookings and messages in one place."
       ]
     },
@@ -329,17 +329,17 @@
       "layout": "tip",
       "audience": "everyone",
       "hooks": [
-        "Write your sessions down",
+        "Put the plan in writing",
         "Book it like a meeting",
         "Tell someone your plan",
         "Small sessions still count",
         "Rest days are part of the plan"
       ],
       "sub": [
-        "People who track their training can see their progress. Log it and share it with your coach.",
+        "A plan on paper beats a plan in your head. Ask your coach to put it in LiftRuna.",
         "A session in the calendar is harder to skip. Book it with your coach.",
         "Saying it out loud makes it real. Share your plan with your community.",
-        "Twenty minutes beats zero. Log it anyway.",
+        "Twenty minutes beats zero. Share it with your crew.",
         "Ask your coach to plan your rest days too."
       ]
     },
@@ -426,7 +426,7 @@
       "audience": "trainers",
       "screen": "trainerHome",
       "hooks": [
-        "Write the plan once. See every session they log.",
+        "Write the plan once. Assign it in seconds.",
         "Know if they actually did the workout",
         "Programmes your clients will open"
       ],
@@ -440,8 +440,8 @@
           "It lands in your client's pocket"
         ],
         [
-          "See the logs",
-          "Every workout they record"
+          "Message them",
+          "Questions answered in the app"
         ]
       ]
     },
@@ -581,7 +581,7 @@
         "Share the process, not just the results"
       ],
       "sub": [
-        "Ask first, then celebrate a client's PB on your feed.",
+        "Ask first, then celebrate a client's win on your feed.",
         "A client cheering you on beats any advert.",
         "Show what training with you is like, week by week."
       ]
@@ -624,25 +624,9 @@
           "Clients book their slots"
         ],
         [
-          "Logs",
-          "See every session they record"
+          "Messages",
+          "Talk without sharing your number"
         ]
-      ]
-    },
-    {
-      "id": "mem-pb",
-      "layout": "hook",
-      "audience": "everyone",
-      "screen": "feed",
-      "hooks": [
-        "New PB? Make it count",
-        "Track every personal best",
-        "Your PBs, all in one place"
-      ],
-      "sub": [
-        "Log your lifts and see your bests add up.",
-        "Personal bests from your logged workouts, kept for you.",
-        "Share a PB with your crew and your coach."
       ]
     },
     {
@@ -761,7 +745,7 @@
         "Plan the week on Sunday"
       ],
       "sub": [
-        "Most weeks feel the same. Keep logging and the change shows up.",
+        "Most weeks feel the same. Keep showing up and the change comes.",
         "The sessions you almost skipped are the ones that count.",
         "Three steady sessions beat one heroic one.",
         "Ten minutes on Sunday sets up the whole week."
@@ -784,8 +768,8 @@
           "From a coach who gets {topic}"
         ],
         [
-          "Your logs",
-          "Every session in one place"
+          "Your sessions",
+          "Booked with your coach"
         ],
         [
           "Your crew",

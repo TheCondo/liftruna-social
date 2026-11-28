@@ -14,7 +14,6 @@ const FEATURES = [
   "invite links for clients (one use, last 7 days)",
   "client list with private labels and colours",
   "plans/programmes that trainers assign and clients follow",
-  "workout logging and personal bests",
   "bookings: clients request sessions, trainers confirm, reminders and phone notifications",
   "private messages between trainer and client",
   "a community feed: posts, photos, likes, comments, following",
@@ -32,7 +31,7 @@ Only mention these real features: ${FEATURES.join("; ")}.
 Never: weight-loss numbers or promises, diets, fasting, body-shaming, before/after, medical or health claims, guaranteed results,
 supplements or steroids, anything aimed at under-18s (no school or exam themes), invented statistics, testimonials or user numbers,
 promises that a trainer's business, followers, income or clients will grow, or claims about how secure the app is.
-LiftRuna has NO payments, invoices, nutrition or food tracking, habit tracking, check-ins, AI, wearables or video calls: never mention them.
+LiftRuna has NO workout logging or personal bests for members yet, NO payments, invoices, nutrition or food tracking, habit tracking, check-ins, AI, wearables or video calls: never mention them.
 Limits: hook at most 60 characters; sub at most 110; point title at most 32; point detail at most 55; option at most 22; body at most 300.
 Return ONLY JSON: {"posts":[{"i":<index>,"hook":"","sub":"","points":[["",""]],"options":["",""],"body":""}]}.
 "body" is the caption text before the call to action (2-4 short lines).

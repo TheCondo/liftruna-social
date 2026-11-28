@@ -1,45 +1,205 @@
 {
   "_about": "Fitness topics watched on Wikipedia (English article titles). A topic is 'rising' when last week's daily views are well above its usual level. 'angle' links it to LiftRuna. Add or remove freely; blocked topics live in safety.json.",
   "topics": [
-    { "article": "Hyrox", "name": "Hyrox", "angle": "log every Hyrox session and share it with your coach" },
-    { "article": "Parkrun", "name": "parkrun", "angle": "share your Saturday parkrun with your training community" },
-    { "article": "Couch_to_5K", "name": "Couch to 5K", "angle": "go from first run to 5K with a coach checking in" },
-    { "article": "Marathon", "name": "marathon training", "angle": "long runs logged, plan adjusted by your coach" },
-    { "article": "Half_marathon", "name": "half marathon training", "angle": "a half-marathon plan your coach can see" },
-    { "article": "Powerlifting", "name": "powerlifting", "angle": "track your big three and share PBs with your coach" },
-    { "article": "Bodybuilding", "name": "bodybuilding", "angle": "training splits planned and logged with your coach" },
-    { "article": "CrossFit", "name": "CrossFit", "angle": "log your WODs and keep your coach in the loop" },
-    { "article": "Pilates", "name": "Pilates", "angle": "book sessions and follow your instructor's plan" },
-    { "article": "Yoga_as_exercise", "name": "yoga", "angle": "book classes and keep your practice consistent" },
-    { "article": "Calisthenics", "name": "calisthenics", "angle": "skill progressions planned with a coach" },
-    { "article": "High-intensity_interval_training", "name": "HIIT", "angle": "short sessions planned by your coach, logged in one place" },
-    { "article": "Strength_training", "name": "strength training", "angle": "programmes from your coach, every session logged" },
-    { "article": "Weight_training", "name": "weight training", "angle": "your coach's plan in your pocket at the gym" },
-    { "article": "Personal_trainer", "name": "personal training", "angle": "trainers run their clients, plans and bookings in one app" },
-    { "article": "Kettlebell", "name": "kettlebell training", "angle": "kettlebell sessions planned and logged" },
-    { "article": "Deadlift", "name": "deadlifts", "angle": "track your lifts and share PBs with your coach" },
-    { "article": "Squat_(exercise)", "name": "squats", "angle": "track your lifts and get form feedback from your coach" },
-    { "article": "Bench_press", "name": "bench press", "angle": "track your lifts and share PBs with your coach" },
-    { "article": "Indoor_rower", "name": "rowing machines", "angle": "rowing sessions logged and shared with your coach" },
-    { "article": "Indoor_cycling", "name": "indoor cycling", "angle": "spin sessions booked and logged" },
-    { "article": "Boxing_training", "name": "boxing training", "angle": "book pad sessions with your coach" },
-    { "article": "Brazilian_jiu-jitsu", "name": "BJJ", "angle": "strength and conditioning planned around your rolling" },
-    { "article": "Mixed_martial_arts", "name": "MMA", "angle": "fight-camp conditioning planned with a coach" },
-    { "article": "Triathlon", "name": "triathlon", "angle": "swim, bike and run sessions planned with a coach" },
-    { "article": "Ultramarathon", "name": "ultra running", "angle": "big training weeks planned and logged" },
-    { "article": "Rock_climbing", "name": "climbing", "angle": "strength sessions that support your climbing" },
-    { "article": "Bouldering", "name": "bouldering", "angle": "strength sessions that support your climbing" },
-    { "article": "Padel", "name": "padel", "angle": "fitness for padel, planned with a coach" },
-    { "article": "Pickleball", "name": "pickleball", "angle": "stay match-fit with a coach's plan" },
-    { "article": "Hiking", "name": "hiking", "angle": "get fit for big walks with a coach's plan" },
-    { "article": "Nordic_walking", "name": "Nordic walking", "angle": "walking sessions with a community behind you" },
-    { "article": "Running", "name": "running", "angle": "share your runs and get a plan from a coach" },
-    { "article": "Trail_running", "name": "trail running", "angle": "trail plans and long runs logged" },
-    { "article": "Swimming_(sport)", "name": "swimming", "angle": "swim sessions planned by your coach" },
-    { "article": "Functional_training", "name": "functional training", "angle": "everyday strength, planned with a coach" },
-    { "article": "Mobility_(exercise)", "name": "mobility work", "angle": "mobility routines from your coach, ticked off daily" },
-    { "article": "Resistance_band", "name": "resistance band training", "angle": "home sessions planned by your coach" },
-    { "article": "Gym", "name": "the gym", "angle": "know what you're doing every time you walk in" },
-    { "article": "Physical_fitness", "name": "fitness", "angle": "a coach, a plan and a community in one app" }
+    {
+      "article": "Hyrox",
+      "name": "Hyrox",
+      "angle": "Hyrox sessions planned with your coach, booked in one place"
+    },
+    {
+      "article": "Parkrun",
+      "name": "parkrun",
+      "angle": "share your Saturday parkrun with your training community"
+    },
+    {
+      "article": "Couch_to_5K",
+      "name": "Couch to 5K",
+      "angle": "go from first run to 5K with a coach checking in"
+    },
+    {
+      "article": "Marathon",
+      "name": "marathon training",
+      "angle": "marathon training sessions planned with your coach, booked in one place"
+    },
+    {
+      "article": "Half_marathon",
+      "name": "half marathon training",
+      "angle": "a half-marathon plan your coach can see"
+    },
+    {
+      "article": "Powerlifting",
+      "name": "powerlifting",
+      "angle": "powerlifting sessions planned with your coach, booked in one place"
+    },
+    {
+      "article": "Bodybuilding",
+      "name": "bodybuilding",
+      "angle": "bodybuilding sessions planned with your coach, booked in one place"
+    },
+    {
+      "article": "CrossFit",
+      "name": "CrossFit",
+      "angle": "CrossFit sessions planned with your coach, booked in one place"
+    },
+    {
+      "article": "Pilates",
+      "name": "Pilates",
+      "angle": "book sessions and follow your instructor's plan"
+    },
+    {
+      "article": "Yoga_as_exercise",
+      "name": "yoga",
+      "angle": "book classes and keep your practice consistent"
+    },
+    {
+      "article": "Calisthenics",
+      "name": "calisthenics",
+      "angle": "skill progressions planned with a coach"
+    },
+    {
+      "article": "High-intensity_interval_training",
+      "name": "HIIT",
+      "angle": "HIIT sessions planned with your coach, booked in one place"
+    },
+    {
+      "article": "Strength_training",
+      "name": "strength training",
+      "angle": "strength training sessions planned with your coach, booked in one place"
+    },
+    {
+      "article": "Weight_training",
+      "name": "weight training",
+      "angle": "your coach's plan in your pocket at the gym"
+    },
+    {
+      "article": "Personal_trainer",
+      "name": "personal training",
+      "angle": "trainers run their clients, plans and bookings in one app"
+    },
+    {
+      "article": "Kettlebell",
+      "name": "kettlebell training",
+      "angle": "kettlebell training sessions planned with your coach, booked in one place"
+    },
+    {
+      "article": "Deadlift",
+      "name": "deadlifts",
+      "angle": "deadlifts sessions planned with your coach, booked in one place"
+    },
+    {
+      "article": "Squat_(exercise)",
+      "name": "squats",
+      "angle": "track your lifts and get form feedback from your coach"
+    },
+    {
+      "article": "Bench_press",
+      "name": "bench press",
+      "angle": "bench press sessions planned with your coach, booked in one place"
+    },
+    {
+      "article": "Indoor_rower",
+      "name": "rowing machines",
+      "angle": "rowing machines sessions planned with your coach, booked in one place"
+    },
+    {
+      "article": "Indoor_cycling",
+      "name": "indoor cycling",
+      "angle": "indoor cycling sessions planned with your coach, booked in one place"
+    },
+    {
+      "article": "Boxing_training",
+      "name": "boxing training",
+      "angle": "book pad sessions with your coach"
+    },
+    {
+      "article": "Brazilian_jiu-jitsu",
+      "name": "BJJ",
+      "angle": "strength and conditioning planned around your rolling"
+    },
+    {
+      "article": "Mixed_martial_arts",
+      "name": "MMA",
+      "angle": "fight-camp conditioning planned with a coach"
+    },
+    {
+      "article": "Triathlon",
+      "name": "triathlon",
+      "angle": "swim, bike and run sessions planned with a coach"
+    },
+    {
+      "article": "Ultramarathon",
+      "name": "ultra running",
+      "angle": "ultra running sessions planned with your coach, booked in one place"
+    },
+    {
+      "article": "Rock_climbing",
+      "name": "climbing",
+      "angle": "strength sessions that support your climbing"
+    },
+    {
+      "article": "Bouldering",
+      "name": "bouldering",
+      "angle": "strength sessions that support your climbing"
+    },
+    {
+      "article": "Padel",
+      "name": "padel",
+      "angle": "fitness for padel, planned with a coach"
+    },
+    {
+      "article": "Pickleball",
+      "name": "pickleball",
+      "angle": "stay match-fit with a coach's plan"
+    },
+    {
+      "article": "Hiking",
+      "name": "hiking",
+      "angle": "get fit for big walks with a coach's plan"
+    },
+    {
+      "article": "Nordic_walking",
+      "name": "Nordic walking",
+      "angle": "walking sessions with a community behind you"
+    },
+    {
+      "article": "Running",
+      "name": "running",
+      "angle": "share your runs and get a plan from a coach"
+    },
+    {
+      "article": "Trail_running",
+      "name": "trail running",
+      "angle": "trail running sessions planned with your coach, booked in one place"
+    },
+    {
+      "article": "Swimming_(sport)",
+      "name": "swimming",
+      "angle": "swim sessions planned by your coach"
+    },
+    {
+      "article": "Functional_training",
+      "name": "functional training",
+      "angle": "everyday strength, planned with a coach"
+    },
+    {
+      "article": "Mobility_(exercise)",
+      "name": "mobility work",
+      "angle": "mobility routines from your coach, ticked off daily"
+    },
+    {
+      "article": "Resistance_band",
+      "name": "resistance band training",
+      "angle": "home sessions planned by your coach"
+    },
+    {
+      "article": "Gym",
+      "name": "the gym",
+      "angle": "know what you're doing every time you walk in"
+    },
+    {
+      "article": "Physical_fitness",
+      "name": "fitness",
+      "angle": "a coach, a plan and a community in one app"
+    }
   ]
 }

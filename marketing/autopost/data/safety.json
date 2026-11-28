@@ -75,7 +75,15 @@
     "check-ins",
     "calorie",
     "calories",
-    "macros"
+    "macros",
+    "logged",
+    "logging",
+    "log your",
+    "log every",
+    "personal best",
+    "personal bests",
+    "PB",
+    "PBs"
   ],
   "patterns": [
     "\\b\\d+\\s?(kg|kgs|lb|lbs|pounds|stone)\\b",
