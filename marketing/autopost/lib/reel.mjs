@@ -9,7 +9,7 @@
 // Built as an animated web page, recorded frame by frame (30 fps) with the
 // browser the tests use, then joined with FFmpeg (silent track, so a trending
 // sound can be added by hand on TikTok). Same method as marketing/tiktok.
-import { mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { spawnSync } from "node:child_process";
 import { join } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
@@ -21,12 +21,45 @@ const base = pathToFileURL(source).href;
 const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
 const FPS = 30;
 
-// Which three app screens to show: the post's own, then others for its audience.
-function screensFor(post) {
+// Real app footage (marketing/footage, recorded from the app with demo
+// accounts on the test database). Each scene: a clip and what it shows.
+const footage = fileURLToPath(new URL("../../footage/clips/", import.meta.url));
+const CLIPS = {
+  "trainer-home": { title: "Your week at a glance", line: "Requests, sessions and clients on one screen" },
+  invite: { title: "Invite a client", line: "One link. Works once. Lasts 7 days." },
+  join: { title: "They join in seconds", line: "Your client taps the link and they're in" },
+  booking: { title: "Clients book themselves", line: "They pick a free time and send a request" },
+  confirm: { title: "Confirm in one tap", line: "Requests land straight in your calendar" },
+  plan: { title: "Write the plan once", line: "Build it, then assign it to a client" },
+  feed: { title: "A feed for your crew", line: "Share sessions and cheer each other on" },
+  "trainer-page": { title: "Your own trainer page", line: "One link to share with new clients" },
+};
+// Which clip suits each of the post's own screens.
+const SCREEN_CLIP = { trainerHome: "trainer-home", clients: "confirm", inviteLink: "invite", inviteOpen: "join", publicPage: "trainer-page", feed: "feed", composer: "feed", comments: "feed" };
+
+function seconds(file) {
+  const out = spawnSync(process.env.FFMPEG_PATH || "ffmpeg", ["-i", file], { encoding: "utf8" }).stderr ?? "";
+  const m = out.match(/Duration: (\d+):(\d+):([\d.]+)/);
+  return m ? Number(m[1]) * 3600 + Number(m[2]) * 60 + Number(m[3]) : 0;
+}
+
+// Three scenes: the post's own, then others for its audience, varied per post.
+function scenesFor(post) {
   const files = Object.fromEntries(Object.entries(bank.screens).map(([k, v]) => [v.file, k]));
-  const own = [...(post.stepScreens ?? []), post.screen].filter(Boolean).map((f) => files[f]).filter(Boolean);
-  const extra = post.audience === "trainers" ? ["trainerHome", "inviteLink", "clients", "publicPage"] : ["feed", "composer", "comments", "inviteOpen"];
-  return [...new Set([...own, ...extra])].slice(0, 3).map((k) => bank.screens[k]);
+  const own = [...(post.stepScreens ?? []), post.screen].filter(Boolean).map((f) => SCREEN_CLIP[files[f]]).filter(Boolean);
+  const pool = post.audience === "trainers" ? ["trainer-home", "booking", "confirm", "plan", "invite", "join", "trainer-page"] : ["join", "booking", "feed", "trainer-page"];
+  let h = 0;
+  for (const c of post.id ?? "") h = (h * 31 + c.charCodeAt(0)) >>> 0;
+  const rotated = pool.map((_, i) => pool[(i + h) % pool.length]);
+  return [...new Set([...own, ...rotated])]
+    .filter((k) => existsSync(join(footage, `${k}.mp4`)))
+    .slice(0, 3)
+    .map((k) => {
+      const file = join(footage, `${k}.mp4`);
+      const rate = 1.3;
+      const s = Math.min(6.5, Math.max(3.8, seconds(file) / rate));
+      return { video: pathToFileURL(file).href, rate, seconds: Number(s.toFixed(2)), ...CLIPS[k] };
+    });
 }
 
 // Three short beats for the quick-fire scene.
@@ -41,12 +74,12 @@ export function reelHtml(post) {
     .split(/(?<=[.?!])\s+/)
     .filter(Boolean)
     .slice(0, 3);
-  const scenes = screensFor(post);
+  const scenes = scenesFor(post);
   // Everything shown is escaped: the page builds its scenes from these.
   const data = {
     eyebrow: esc(post.eyebrow),
     subLines: subLines.map(esc),
-    scenes: scenes.map((s) => ({ img: esc(s.file), title: esc(s.title), line: esc(s.line) })),
+    scenes: scenes.map((s) => ({ video: esc(s.video), rate: s.rate, seconds: s.seconds, title: esc(s.title), line: esc(s.line) })),
     beats: beats(post).map(esc),
     options: post.options ? post.options.map(esc) : null,
     days: post.days ?? null,
@@ -74,6 +107,7 @@ html, body { width: 1080px; height: 1920px; }
 .desc { font-size: 36px; color: #cbd2e0; margin-top: 18px; line-height: 1.3; }
 .phone { left: 50%; margin-left: -270px; top: 640px; width: 540px; height: 1120px; }
 .phone .screen img { transform-origin: 50% 20%; }
+.phone .screen video { display: block; width: 100%; height: 100%; object-fit: cover; object-position: top; background: #07080c; }
 .chip { position: absolute; z-index: 6; padding: 18px 28px; border-radius: 22px; font-family: "Bricolage"; font-weight: 700; font-size: 34px;
   background: rgba(15,17,23,.92); border: 1.5px solid rgba(196,181,253,.7); box-shadow: 0 0 40px rgba(139,92,246,.55); }
 .beat { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; text-align: center; padding: 0 80px;
@@ -137,15 +171,19 @@ if (D.subLines.length) {
 // 3. App scenes: phone in, screen zooms and pans, label pops.
 D.scenes.forEach((s, i) => {
   const left = i % 2 === 0;
+  // Real app footage (marketing/footage/clips), played at a brisk pace.
+  const d = s.seconds;
   const el = add('<div class="head"><div class="title">' + s.title + '</div><div class="desc">' + s.line + '</div></div>' +
-    '<div class="phone"><div class="screen"><img src="' + s.img + '"></div></div>' +
-    '<div class="chip" style="top:' + (1150 + i * 90) + 'px;' + (left ? "left:70px" : "right:70px") + '">' + ["See it all", "One tap", "Real app"][i % 3] + '</div>');
-  const d = 4.2;
+    '<div class="phone"><div class="screen">' +
+    (s.video ? '<video muted playsinline preload="auto" src="' + s.video + '" data-start="' + t + '" data-rate="' + s.rate + '"></video>' : '<img src="' + s.img + '">') +
+    '</div></div>' +
+    '<div class="chip" style="top:' + (1150 + i * 90) + 'px;' + (left ? "left:70px" : "right:70px") + '">' + ["Real app", "One tap", "Live in the beta"][i % 3] + '</div>');
   show(el, t, d);
   anim(el.querySelector(".title"), [{ opacity: 0, transform: "translateY(50px)" }, { opacity: 1, transform: "none" }], t + .1, .6);
   anim(el.querySelector(".desc"), [{ opacity: 0, transform: "translateY(30px)" }, { opacity: 1, transform: "none" }], t + .3, .6);
   anim(el.querySelector(".phone"), [{ opacity: 0, transform: "translateY(300px) rotate(" + (left ? -6 : 6) + "deg) scale(.9)" }, { opacity: 1, transform: "translateY(0) rotate(0) scale(1)" }], t + .1, .8);
-  anim(el.querySelector(".phone img"), [{ transform: "scale(1) translateY(0)" }, { transform: "scale(1.32) translateY(" + (i % 2 ? -8 : -14) + "%)" }], t + .9, d - .6, { easing: "ease-in-out" });
+  if (el.querySelector(".phone img")) anim(el.querySelector(".phone img"), [{ transform: "scale(1) translateY(0)" }, { transform: "scale(1.32) translateY(" + (i % 2 ? -8 : -14) + "%)" }], t + .9, d - .6, { easing: "ease-in-out" });
+  else anim(el.querySelector(".phone"), [{ transform: "scale(1)" }, { transform: "scale(1.04)" }], t + .9, d - .6, { easing: "ease-in-out", composite: "add" });
   anim(el.querySelector(".chip"), [{ opacity: 0, transform: "scale(.3) rotate(-8deg)" }, { opacity: 1, transform: "scale(1.1) rotate(" + (left ? -3 : 3) + "deg)", offset: .6 }, { opacity: 1, transform: "rotate(" + (left ? -3 : 3) + "deg)" }], t + 1.6, .5);
   document.getElementById("brandbar").animate([{ opacity: 0 }, { opacity: 1, offset: .1 }, { opacity: 1, offset: .9 }, { opacity: 0 }], { delay: t * 1000, duration: d * 1000, fill: "none" });
   t += d;
@@ -181,7 +219,16 @@ anim(document.getElementById("g1"), [{ transform: "translate(0,0)" }, { transfor
 anim(document.getElementById("g2"), [{ transform: "translate(0,0)" }, { transform: "translate(160px,-120px)" }], 0, total, { easing: "ease-in-out" });
 anim(document.getElementById("g3"), [{ transform: "translate(0,0)" }, { transform: "translate(-140px,180px)" }], 0, total, { easing: "ease-in-out" });
 window.TOTAL = total;
-window.seek = (sec) => { for (const a of document.getAnimations()) { a.pause(); a.currentTime = sec * 1000; } };
+// Moves everything to a moment: animations, and each clip to its own time
+// (waiting until the browser has drawn that video frame).
+window.seek = async (sec) => {
+  for (const a of document.getAnimations()) { a.pause(); a.currentTime = sec * 1000; }
+  await Promise.all([...document.querySelectorAll("video")].map((v) => {
+    const at = Math.min(Math.max(0, (sec - Number(v.dataset.start)) * Number(v.dataset.rate)), Math.max(0, v.duration - 0.05));
+    if (Math.abs(v.currentTime - at) < 0.001) return null;
+    return new Promise((resolve) => { v.addEventListener("seeked", resolve, { once: true }); v.currentTime = at; });
+  }));
+};
 </script></body></html>`;
 }
 
@@ -198,6 +245,8 @@ export async function makeReel(post, dir) {
     await page.goto(`file:///${html.replaceAll("\\", "/")}`);
     await page.evaluate(() => document.fonts.ready);
     await page.waitForTimeout(300);
+    // Every clip loaded before recording starts.
+    await page.evaluate(() => Promise.all([...document.querySelectorAll("video")].map((v) => (v.readyState >= 2 ? null : new Promise((r) => v.addEventListener("loadeddata", r, { once: true }))))));
     total = await page.evaluate(() => window.TOTAL);
     const n = Math.round(total * FPS);
     for (let i = 0; i < n; i++) {

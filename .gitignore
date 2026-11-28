@@ -11,3 +11,4 @@ marketing/autopost/data/telegram-state.json
 # Cloudflare build files and local test keys.
 marketing/autopost/worker/.wrangler/
 marketing/autopost/worker/.dev.vars
+marketing/footage/raw/
