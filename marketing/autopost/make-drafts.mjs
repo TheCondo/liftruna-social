@@ -79,9 +79,12 @@ const inbox = inboxAll.filter((i) => !i.used);
 // --week: the whole coming week at once (Connor, 25 Nov 2026): 4 drafts for
 // each day from next Monday, so he can approve the best 3 a day in one sitting.
 const week = args.includes("--week");
+// --tomorrow: tomorrow's drafts, sent the evening before (Connor, 28 Nov 2026), so all
+// 3 approved posts go out the next day at 08:00, 12:30 and 18:30.
+const tomorrow = args.includes("--tomorrow");
 const now = new Date();
 const nextMonday = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() + ((8 - now.getUTCDay()) % 7 || 7)));
-const start = week ? nextMonday : now;
+const start = week ? nextMonday : tomorrow ? new Date(now.getTime() + 86_400_000) : now;
 const today = start.toISOString().slice(0, 10);
 // --extra N --format video|carousel|single: N more drafts today (testing).
 const extra = Number(opt("--extra") ?? 0);
@@ -140,7 +143,7 @@ for (let d = 0; d < days; d++) {
         for (const [i, f] of files.entries()) await callWorker("PUT", `/drafts/${post.id}/img/${i + 1}`, readFileSync(f), "image/jpeg");
         if (video) await callWorker("PUT", `/drafts/${post.id}/video`, readFileSync(video), "video/mp4");
       }
-      entry.telegramMessageId = await telegram.sendDraft({ ...post, format }, files, { number: k + 1, of: posts.length, video, day: week ? new Date(`${date}T12:00:00Z`).toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short" }) : "" });
+      entry.telegramMessageId = await telegram.sendDraft({ ...post, format }, files, { number: k + 1, of: posts.length, video, day: week || tomorrow ? new Date(`${date}T12:00:00Z`).toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short" }) : "" });
       if (worker) await callWorker("PUT", `/drafts/${post.id}`, entry);
     }
   }

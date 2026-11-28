@@ -474,6 +474,11 @@ const worker = {
       await postNext(env);
       return json({ ok: true });
     }
+    // Sends the morning update now (testing).
+    if (req.method === "POST" && url.pathname === "/morning") {
+      await morningUpdate(env);
+      return json({ ok: true });
+    }
     // Sends the weekly TikTok batch now (testing, or a missed Sunday).
     if (req.method === "POST" && url.pathname === "/tiktok-batch") {
       return json({ sent: await sendTikTokBatch(env) });
@@ -495,8 +500,39 @@ const worker = {
       ctx.waitUntil(sendTikTokBatch(env));
       return;
     }
-    ctx.waitUntil(renewKey(env).then(() => postNext(env)));
+    const morning = event.cron === "0 8 * * *";
+    ctx.waitUntil(
+      renewKey(env)
+        .then(() => postNext(env))
+        .then(() => (morning ? morningUpdate(env) : null)),
+    );
   },
 };
+
+// Good-morning message at 08:00 every day (Connor, 28 Nov 2026), so he
+// always knows it is running and what is coming, even on quiet days.
+async function morningUpdate(env) {
+  const now = new Date();
+  const today = now.toISOString().slice(0, 10);
+  const drafts = await allDrafts(env);
+  const queue = drafts.filter((d) => d.status === "approved");
+  const postedToday = drafts.filter((d) => d.status === "posted" && (d.postedAt ?? "").startsWith(today)).length;
+  const waiting = drafts.filter((d) => d.status === "draft" && (d.date ?? "") >= new Date(now.getTime() - 7 * 86_400_000).toISOString().slice(0, 10)).length;
+  const sunday = now.getUTCDay() === 0;
+  const next = "this evening at 18:00 (tomorrow's 3)";
+  const lastDay = queue.length ? new Date(now.getTime() + Math.max(0, Math.ceil((queue.length - (3 - postedToday)) / 3)) * 86_400_000) : null;
+  const until = lastDay ? lastDay.toLocaleDateString("en-GB", { weekday: "long", timeZone: "UTC" }) : "";
+  const lines = [
+    queue.length || postedToday
+      ? `☀️ Good morning. Today: ${Math.min(3, postedToday + queue.length)} post${postedToday + queue.length === 1 ? "" : "s"} on Instagram and Facebook (08:00, 12:30, 18:30).`
+      : "☀️ Good morning. Nothing is approved for today, so nothing will post.",
+    queue.length ? `Approved and waiting: ${queue.length}, enough until ${until}.` : "",
+    waiting ? `${waiting} draft${waiting === 1 ? "" : "s"} still waiting for you above.` : "",
+    `Next drafts: ${next}.`,
+    queue.length < 3 ? "Want posts sooner? GitHub → liftruna-social → Actions → Social post drafts → Run workflow, extra = 3." : "",
+    sunday ? "Tonight at 21:00: the TikTok week plan." : "",
+  ].filter(Boolean);
+  await say(env, lines.join("\n"));
+}
 
 export default worker;

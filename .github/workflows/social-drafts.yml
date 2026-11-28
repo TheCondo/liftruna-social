@@ -1,18 +1,19 @@
 name: Social post drafts
 
-# Every Sunday afternoon (Connor, 25 Nov 2026): scan what's topical, make the
-# coming week's drafts (4 a day: videos, swipe carousels and single pictures),
-# and send them to Connor in Telegram to approve in one sitting. The
+# Every evening at 18:00 UTC (Connor, 28 Nov 2026): scan what's topical, make
+# tomorrow's 3 drafts (a video, a swipe carousel and a single picture) and
+# send them to Connor in Telegram. Approved ones post the next day at 08:00,
+# 12:30 and 18:30. TikTok comes in the Worker's Sunday week plan. The
 # Cloudflare Worker then handles his taps and posts the approved ones, so no
 # computer needs to be on. This repository is public, so GitHub's minutes
 # are free and unlimited.
 on:
   schedule:
-    - cron: "0 15 * * 0" # Sundays 15:00 UTC
+    - cron: "0 18 * * *" # every day 18:00 UTC
   workflow_dispatch:
     inputs:
       extra:
-        description: "Make this many extra drafts today (0 = the normal weekly batch)"
+        description: "Make this many extra drafts today (0 = the normal 3 for tomorrow)"
         default: "0"
 
 concurrency:
@@ -45,7 +46,7 @@ jobs:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           EXTRA: ${{ inputs.extra || '0' }}
         run: |
-          if [ "$EXTRA" != "0" ]; then node marketing/autopost/make-drafts.mjs --send --extra "$EXTRA"; else node marketing/autopost/make-drafts.mjs --send --week; fi
+          if [ "$EXTRA" != "0" ]; then node marketing/autopost/make-drafts.mjs --send --extra "$EXTRA"; else node marketing/autopost/make-drafts.mjs --send --tomorrow; fi
       # GitHub switches off scheduled jobs in public repositories after 60
       # days with no activity, so each run saves a one-line note.
       - name: Save the last-run note
@@ -63,4 +64,4 @@ jobs:
         run: |
           curl -s -X POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
             --data-urlencode "chat_id=${TELEGRAM_CHAT_ID}" \
-            --data-urlencode "text=⚠️ This week's drafts could not be made (GitHub job failed). Already-approved posts still go out. Tell Claude, or re-run it from the Actions tab." > /dev/null
+            --data-urlencode "text=⚠️ Tomorrow's drafts could not be made (GitHub job failed). Already-approved posts still go out. Tell Claude, or re-run it from the Actions tab." > /dev/null
